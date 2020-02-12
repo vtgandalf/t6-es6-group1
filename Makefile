@@ -1,6 +1,7 @@
 # Externals
-XKERNEL = # add links to the kernel
-XKERNELFOLDER = # add the name of the downloaded folder
+XKERNELFOLDER = linux-2.6.34
+XKERNELARCH = linux-2.6.34.tar.gz
+XKERNEL = https://mirrors.edge.kernel.org/pub/linux/kernel/v2.6/$(XKERNELARCH)
 
 all: xkernel
 
@@ -12,6 +13,10 @@ xkernel.build:
 
 xkernel.clone:
 	@wget $(XKERNEL)
+	@tar xvf $(XKERNELARCH)
+	@rm linux-2.6.34.tar.gz
+	# clone the pregenerated .config file so we dont 
+	# download the whole image as well
 
 xkernel.clean:
 	@rm -rf $(XKERNELFOLDER)
