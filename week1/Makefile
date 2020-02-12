@@ -21,7 +21,7 @@ all:
 # ARCH and CROSS_COMPILE needs to be exported for other processes which 'make' invokes 
 # 'make' variables are not epxorted by default
 lpc:
-	@ echo "=== CROSS COMPILATION TO LPC3250 ==="
+	@echo "=== CROSS COMPILATION TO LPC3250 ==="
 	export ARCH=arm
 	export CROSS_COMPILE=/usr/local/xtools/arm-unknown-linux-uclibcgnueabi/bin/arm-linux-gcc
 	make -C $(BUILD_FOLDER) M=$(PWD) modules
