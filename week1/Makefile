@@ -35,8 +35,7 @@ CROSS_COMPILE=/usr/local/xtools/arm-unknown-linux-uclibcgnueabi/bin/arm-linux-
 #	Targets
 #
 
-all:
-	local lpc 
+all: local lpc 
 
 local:
 	@ echo "=== COMPILE FOR LOCAL ENVIRONMENT ==="
