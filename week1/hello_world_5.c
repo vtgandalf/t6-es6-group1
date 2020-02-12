@@ -1,6 +1,10 @@
 /*
- * hello_world_5.c - Demonstrates command line argument passing to a module.
- */
+* @file hello_world_5.c
+* @athor Valeri Todorov
+* @date 12/20/2020
+*
+* @brief Demonstrates command line argument passing to a module.
+*/
 #include <linux/init.h>
 #include <linux/kernel.h>
 #include <linux/module.h>

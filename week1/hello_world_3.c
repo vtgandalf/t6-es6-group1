@@ -1,6 +1,11 @@
 /*
- * hello_world_3.c - Illustrating the __init, __initdata and __exit macros.
- */
+* @file hello_world_3.c
+* @athor Valeri Todorov
+* @date 12/20/2020
+*
+* @brief Illustrating the __init, __initdata and __exit macros.
+*/
+
 #include <linux/init.h>   /* Needed for the macros */
 #include <linux/kernel.h> /* Needed for KERN_INFO */
 #include <linux/module.h> /* Needed by all modules */

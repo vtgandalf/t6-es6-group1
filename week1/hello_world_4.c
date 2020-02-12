@@ -1,6 +1,11 @@
 /*
- * hello_world_4.c - Demonstrates module documentation.
- */
+* @file hello_world_4.c
+* @athor Valeri Todorov
+* @date 12/20/2020
+*
+* @brief Demonstrates module documentation.
+*/
+
 #include <linux/init.h>   /* Needed for the macros */
 #include <linux/kernel.h> /* Needed for KERN_INFO */
 #include <linux/module.h> /* Needed by all modules */

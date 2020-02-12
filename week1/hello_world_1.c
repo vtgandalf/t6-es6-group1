@@ -1,6 +1,11 @@
 /*
- * hello_world_1.c - The simplest kernel module.
- */
+* @file hello_world_1.c
+* @author Valeri Todorov
+* @date 12/02/2020
+*
+* @brief The simplest kernel module.
+*/
+
 #include <linux/kernel.h> /* Needed for KERN_INFO */
 #include <linux/module.h> /* Needed by all modules */
 

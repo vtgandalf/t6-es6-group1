@@ -1,6 +1,10 @@
 /*
- * stop.c - Illustration of multi filed modules
- */
+* @file stop.c
+* @athor Valeri Todorov
+* @date 12/20/2020
+*
+* @brief Illustration of multi filed modules
+*/
 
 #include <linux/kernel.h> /* We're doing kernel work */
 #include <linux/module.h> /* Specifically, a module  */

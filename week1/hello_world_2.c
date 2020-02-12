@@ -1,7 +1,12 @@
 /*
- * hello_world_2.c - Demonstrating the module_init() and module_exit() macros.
- *  This is preferred over using init_module() and cleanup_module().
- */
+* @file hello_world_2.c
+* @author Valeri Todorov
+* @date 12/02/2020
+*
+* @brief Demonstrating the module_init() and module_exit() macros.
+* This is preferred over using init_module() and cleanup_module().
+*/
+
 #include <linux/init.h>   /* Needed for the macros */
 #include <linux/kernel.h> /* Needed for KERN_INFO */
 #include <linux/module.h> /* Needed by all modules */
