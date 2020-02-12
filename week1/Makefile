@@ -2,6 +2,13 @@
 # $(obj-m) specifies object files which are built as loadable kernel modules 
 # See: https://www.kernel.org/doc/Documentation/kbuild/makefiles.txt
 obj-m += hello_world.o
+obj-m += hello_world_1.o
+obj-m += hello_world_2.o
+obj-m += hello_world_3.o
+obj-m += hello_world_4.o
+obj-m += hello_world_5.o
+obj-m += startstop.o
+startstop-objs := start.o stop.o
 
 #
 #	Local Compilation Configuration
@@ -16,6 +23,7 @@ KSRC=/lib/modules/$(VERSION)/build
 # 
 #	Cross Compilation Configuration
 # 
+LPC_KSRC=../linux-2.6.34/
 
 # Architecture
 ARCH=arm
