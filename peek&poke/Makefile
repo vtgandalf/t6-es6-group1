@@ -21,12 +21,17 @@ CROSS_COMPILE=/usr/local/xtools/arm-unknown-linux-uclibcgnueabi/bin/arm-linux-
 
 # Targets
 
+all: local user_space lpc
+
 local:
 	@ echo "=== COMPILE FOR LOCAL ENVIRONMENT ==="
 	make -C $(KSRC) M=$(PWD) modules
 
 user_space:
 	gcc $(CFLAGS) $(USERSPACE).c -o $(USERSPACE)
+
+user_space.clean:
+	rm $(USERSPACE)
 
 lpc:
 	@ echo "=== CROSS COMPILATION TO LPC3250 ==="
@@ -37,9 +42,7 @@ ifneq ($(LPC_KSRC),)
 clean:
 	make -C $(KSRC) M=$(PWD) clean
 	make -C $(LPC_KSRC) M=$(PWD) clean
-	rm $(USERSPACE)
 else
 clean:
 	make -C $(KSRC) M=$(PWD) clean
-	$(USERSPACE)
 endif	
