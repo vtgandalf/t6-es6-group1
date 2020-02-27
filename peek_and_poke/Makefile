@@ -1,18 +1,12 @@
-# Add module object to kmake
-# $(obj-m) specifies object files which are built as loadable kernel modules 
-# See: https://www.kernel.org/doc/Documentation/kbuild/makefiles.txt
-obj-m += hello_world.o
-obj-m += hello_world_1.o
-obj-m += hello_world_2.o
-obj-m += hello_world_3.o
-obj-m += hello_world_4.o
-obj-m += hello_world_5.o
-obj-m += startstop.o
-startstop-objs := start.o stop.o
+# Userspace programs
+USERSPACE += assignment1
 
-#
-#	Local Compilation Configuration
-#
+# Flags
+UCFLAGS=-Wall
+
+# Kernel modules
+# obj-m += peek_poke_module.o
+obj-m += assignment2.o
 
 # Kernel version
 VERSION=$(shell uname -r)
@@ -20,26 +14,25 @@ VERSION=$(shell uname -r)
 # Kernel source location
 KSRC=/lib/modules/$(VERSION)/build
 
-#
-#	Cross Compilation Configuration
-#
+# Cross Compilation Configuration
 LPC_KSRC=../linux-2.6.34/
-
-# Architecture
-ARCH=arm
 
 # Cross compiler prefix
 CROSS_COMPILE=/usr/local/xtools/arm-unknown-linux-uclibcgnueabi/bin/arm-linux-
 
-#
-#	Targets
-#
+# Targets
 
-all: local lpc
+all: local user_space lpc
 
 local:
 	@ echo "=== COMPILE FOR LOCAL ENVIRONMENT ==="
 	make -C $(KSRC) M=$(PWD) modules
+
+user_space:
+	gcc $(UCFLAGS) $(USERSPACE).c -o $(USERSPACE)
+
+user_space.clean:
+	rm $(USERSPACE)
 
 lpc:
 	@ echo "=== CROSS COMPILATION TO LPC3250 ==="
@@ -48,9 +41,11 @@ lpc:
 
 ifneq ($(LPC_KSRC),)
 clean:
+	# make user_space.clean
 	make -C $(KSRC) M=$(PWD) clean
 	make -C $(LPC_KSRC) M=$(PWD) clean
 else
 clean:
+	# make user_space.clean
 	make -C $(KSRC) M=$(PWD) clean
 endif
