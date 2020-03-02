@@ -1,3 +1,4 @@
+
 # Userspace programs
 USERSPACE += assignment1
 
@@ -15,6 +16,7 @@ VERSION=$(shell uname -r)
 KSRC=/lib/modules/$(VERSION)/build
 
 # Cross Compilation Configuration
+ARCH=arm
 LPC_KSRC=../linux-2.6.34/
 
 # Cross compiler prefix

@@ -105,13 +105,13 @@ static ssize_t sysfs_store(struct device* dev,
     // Convert address to the appropriate type
     // make it unsigned because it is an address
     u_long addr;
-    kstrtol(params[1], 0, &addr);
+    simple_strtol(params[1], 0, &addr);
     char* addrPtr = addr;
 
     // Convert the entered number of regs/data
     // into the correct format
     long n_reg_or_data;
-    kstrtol(params[2], 0, &n_reg_or_data);
+    simple_strtol(params[2], 0, &n_reg_or_data);
 
     // If we are in read mode
     if (strcmp(params[0], "r") == 0)
