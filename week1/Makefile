@@ -1,14 +1,15 @@
 # Add module object to kmake
 # $(obj-m) specifies object files which are built as loadable kernel modules 
 # See: https://www.kernel.org/doc/Documentation/kbuild/makefiles.txt
-obj-m += hello_world.o
-obj-m += hello_world_1.o
-obj-m += hello_world_2.o
-obj-m += hello_world_3.o
-obj-m += hello_world_4.o
-obj-m += hello_world_5.o
-obj-m += startstop.o
-startstop-objs := start.o stop.o
+# obj-m += hello_world.o
+# obj-m += hello_world_1.o
+# obj-m += hello_world_2.o
+# obj-m += hello_world_3.o
+# obj-m += hello_world_4.o
+# obj-m += hello_world_5.o
+# obj-m += startstop.o
+# startstop-objs := start.o stop.o
+obj-m += peek_and_poke.o
 
 #
 #	Local Compilation Configuration
