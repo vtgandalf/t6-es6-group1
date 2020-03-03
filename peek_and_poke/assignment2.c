@@ -124,6 +124,7 @@ static ssize_t sysfs_store(struct device* dev,
 
         // Read data from the addr
         data = ioread32(addrPtr);
+        iounmap(addrPtr);
         if (data == NULL || data == 0)
         {
         printk(
@@ -145,7 +146,7 @@ static ssize_t sysfs_store(struct device* dev,
         // Print debug info
         printk(
             KERN_INFO
-            "data: %lu,address: %lu\n",
+            "data: %lu, address: %lu\n",
             data,
             addrPtr
         );
@@ -158,6 +159,7 @@ static ssize_t sysfs_store(struct device* dev,
         //       for general addresses handling this is not
         //       accounted for here
 	    iowrite32(data, addrPtr);
+        iounmap(addrPtr);
     }
 
     // Save the read data in the file
