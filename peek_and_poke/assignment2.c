@@ -86,7 +86,7 @@ static ssize_t sysfs_store(struct device* dev,
     // Copy the last parameter to it
     // This can be overwritten later on if
     // in r mode
-    data = simple_strtoul(params[2], 0, 16);
+    data = simple_strtoul(params[2], 0, 10);
 
     // Check if one of the parameters is invalid
     if ((strcmp(params[0], "r") != 0 &&
