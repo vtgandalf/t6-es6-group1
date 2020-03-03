@@ -162,9 +162,9 @@ static ssize_t sysfs_store(struct device* dev,
 
     // Save the read data in the file
     int n = snprintf(NULL, 0, "%lu", data);
-    used_buffer_size = n > sysfs_max_data_size ?
-    sysfs_max_data_size : n;
-    snprintf(sysfs_buffer, used_buffer_size, "%lu", data);
+    used_buffer_size = n + 1 > sysfs_max_data_size ?
+    sysfs_max_data_size : n + 1;
+    snprintf(sysfs_buffer, used_buffer_size , "%lu", data);
     sysfs_buffer[used_buffer_size] = '\0';
 
     // Print debug info
