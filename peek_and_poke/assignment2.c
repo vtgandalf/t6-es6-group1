@@ -99,7 +99,7 @@ static ssize_t sysfs_store(struct device* dev,
         printk(
             KERN_INFO
             "The entered data is of incorrect type.\n"
-            "Format: (mode address data_to_write)"
+            "Format: (mode address data_to_write)\n"
             "Example: w 0x40024000 0\n"
             "Example: r 0x40024000\n"
         );
@@ -110,7 +110,7 @@ static ssize_t sysfs_store(struct device* dev,
     // make it unsigned because it is an address
     u_long addr = 0;
     simple_strtoul(params[1], 0, &addr);
-    void* addrPtr = ioremap(addr, 8);
+    void* addrPtr = ioremap(addr, 32);
 
     // If we are in read mode
     if (strcmp(params[0], "r") == 0)
