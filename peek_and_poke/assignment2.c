@@ -158,8 +158,24 @@ static ssize_t sysfs_store(struct device* dev,
         //       registry first, but since this program is
         //       for general addresses handling this is not
         //       accounted for here
+        // stop the counter
+        // RTC_CTRL[6] = 1
+        // RTC_CTRL = 0x4002 4010)
+        u_long addrCtrl = 0;
+        u_long dataCtrl = 0;
+        addrCtrl = simple_strtoul("0x40024010", 0, 16);
+        void* addrPtrCtr = ioremap(addrCtrl, 32);
+        data = ioread32(addrPtr);
+        // bitmask of 6th reg is 100000 in bin which is 20 in hex
+        data = data | 0x20;
+        // counter has been stopped
+        // write to it
 	    iowrite32(data, addrPtr);
         iounmap(addrPtr);
+        // now start it again
+        data = ioread32(addrPtr);
+        // bitmask of 6th reg is 100000 in bin which is 20 in hex
+        data = data & 0x20; // simple_strtoul("0x20", 0, 16);
     }
 
     // Save the read data in the file
