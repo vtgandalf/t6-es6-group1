@@ -81,7 +81,7 @@ static ssize_t sysfs_store(struct device* dev,
     }
 
     // Create the object that holds the data
-    u_int data;
+    u_int data = 0;
 
     // Copy the last parameter to it
     // This can be overwritten later on if
@@ -124,10 +124,10 @@ static ssize_t sysfs_store(struct device* dev,
 
         // Read data from the addr
         data = ioread32(addrPtr);
-        if (data == NULL)
+        if (data == NULL || data == 0)
         {
         printk(
-            KERN_INFO "Retreived data from the address is null. This should not happen."
+            KERN_INFO "Retreived data from the address is null. This should not happen.\n"
             );
         return count;
         }
