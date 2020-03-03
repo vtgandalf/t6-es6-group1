@@ -8,9 +8,12 @@
 */
 
 #include <linux/device.h>
-#include <linux/kernel.h>   // Doing kernel stuff
-#include <linux/kobject.h>  // For sysfs
-#include <linux/module.h>   // This is a module
+#include <linux/kernel.h>   	// Doing kernel stuff
+#include <linux/kobject.h>  	// For sysfs
+#include <linux/module.h>   	// This is a module
+#include <asm/io.h>		// For io mapping
+// #include <asm-generic/iomap.h>	// For io reading/writing
+// #include <asm/memmory.h>
 
 // Define the folder and the name of the file
 // that will be accessed
@@ -80,12 +83,12 @@ static ssize_t sysfs_store(struct device* dev,
     }
 
     // Create the object that holds the data
-    char data[sysfs_max_data_size + 1];
+    u_int data;
 
     // Copy the last parameter to it
     // This can be overwritten later on if
     // in r mode
-    strcpy(data, params[2]);
+    simple_strtoul(params[2], 0, &data);
 
     // Check if one of the parameters is invalid
     if ((strcmp(params[0], "r") != 0 &&
@@ -104,14 +107,14 @@ static ssize_t sysfs_store(struct device* dev,
 
     // Convert address to the appropriate type
     // make it unsigned because it is an address
-    u_long addr;
-    simple_strtol(params[1], 0, &addr);
-    char* addrPtr = addr;
+    u_long addr = 0;
+    simple_strtoul(params[1], 0, &addr);
+    void* addrPtr = ioremap(addr, 8);
 
     // Convert the entered number of regs/data
     // into the correct format
-    long n_reg_or_data;
-    simple_strtol(params[2], 0, &n_reg_or_data);
+    u_long n_reg_or_data = 0;
+    simple_strtoul(params[2], 0, &n_reg_or_data);
 
     // If we are in read mode
     if (strcmp(params[0], "r") == 0)
@@ -125,20 +128,29 @@ static ssize_t sysfs_store(struct device* dev,
         );
 
         // Fetch the data from the address
-        int i = 0;
-        while (i < n_reg_or_data)
-        {
-            data[i] = *(addrPtr + i);
-            i++;
-        }
+        // int i = 0;
+        // while (i < n_reg_or_data)
+        // {
+        //     data[i] = *(addrPtr + i);
+        //     i++;
+        // }
+	data = ioread32(addrPtr);
+	if (data == NULL)
+	{
+	  printk(
+	     KERN_INFO "WE FUCKED UP BOI DATA IS NULL BICH"
+          );
+	  return count;
+	}
+	// data = *addrPtr;
 
         // Indicate this is the end of the data obj
-        data[n_reg_or_data] = "\0";
+        // data[n_reg_or_data] = "\0";
 
         // Print debug info
         printk(
             KERN_INFO
-            "retrieved data: %s\n",
+            "retrieved data: %d\n",
             data
         );
     }
@@ -160,13 +172,15 @@ static ssize_t sysfs_store(struct device* dev,
         //       registry first, but since this program is
         //       for general addresses handling this is not
         //       accounted for here
-        *(addrPtr) = data;
+        // *(addrPtr) = data;
+	iowrite32(data, addrPtr);
     }
 
     // Save the read data in the file
     used_buffer_size = sizeof(data) > sysfs_max_data_size ?
     sysfs_max_data_size : sizeof(data);
-    memcpy(sysfs_buffer, data, used_buffer_size);
+    // memcpy(sysfs_buffer, data, used_buffer_size);
+    snprintf(sysfs_buffer, used_buffer_size, "%d", data);
     sysfs_buffer[used_buffer_size] = '\0';
 
     // Print debug info
