@@ -12,8 +12,6 @@
 #include <linux/kobject.h>  	// For sysfs
 #include <linux/module.h>   	// This is a module
 #include <asm/io.h>		// For io mapping
-// #include <asm-generic/iomap.h>	// For io reading/writing
-// #include <asm/memmory.h>
 
 // Define the folder and the name of the file
 // that will be accessed
@@ -94,13 +92,16 @@ static ssize_t sysfs_store(struct device* dev,
     if ((strcmp(params[0], "r") != 0 &&
          strcmp(params[0], "w") != 0) ||
         strcmp(params[1], " ") == 0 ||
-        strcmp(params[2], " ") == 0)
+        (strcmp(params[0], "w") == 0 &&
+         strcmp(params[2], " ") == 0))
     {
         // Print debug msg with instructions
         printk(
             KERN_INFO
-            "The entered data is of incorrect type."
-            "Example: (mode address n_registers/data) r/rw 0x0000000 0\n"
+            "The entered data is of incorrect type.\n"
+            "Format: (mode address data_to_write)"
+            "Example: w 0x40024000 0\n"
+            "Example: r 0x40024000\n"
         );
         return count;
     }
@@ -111,46 +112,30 @@ static ssize_t sysfs_store(struct device* dev,
     simple_strtoul(params[1], 0, &addr);
     void* addrPtr = ioremap(addr, 8);
 
-    // Convert the entered number of regs/data
-    // into the correct format
-    u_long n_reg_or_data = 0;
-    simple_strtoul(params[2], 0, &n_reg_or_data);
-
     // If we are in read mode
     if (strcmp(params[0], "r") == 0)
     {
         // Print debug information
         printk(
             KERN_INFO
-            "n_registers: %i ,address: %lx\n",
-            n_reg_or_data,
+            "address: %lx\n",
             addrPtr
         );
 
-        // Fetch the data from the address
-        // int i = 0;
-        // while (i < n_reg_or_data)
-        // {
-        //     data[i] = *(addrPtr + i);
-        //     i++;
-        // }
-	data = ioread32(addrPtr);
-	if (data == NULL)
-	{
-	  printk(
-	     KERN_INFO "WE FUCKED UP BOI DATA IS NULL BICH"
-          );
-	  return count;
-	}
-	// data = *addrPtr;
-
-        // Indicate this is the end of the data obj
-        // data[n_reg_or_data] = "\0";
+        // Read data from the addr
+        data = ioread32(addrPtr);
+        if (data == NULL)
+        {
+        printk(
+            KERN_INFO "Retreived data from the address is null. This should not happen."
+            );
+        return count;
+        }
 
         // Print debug info
         printk(
             KERN_INFO
-            "retrieved data: %d\n",
+            "retrieved data: %lu\n",
             data
         );
     }
@@ -160,8 +145,8 @@ static ssize_t sysfs_store(struct device* dev,
         // Print debug info
         printk(
             KERN_INFO
-            "data: %s ,address: %lx\n",
-            params[2],
+            "data: %lu,address: %lu\n",
+            data,
             addrPtr
         );
 
@@ -172,21 +157,19 @@ static ssize_t sysfs_store(struct device* dev,
         //       registry first, but since this program is
         //       for general addresses handling this is not
         //       accounted for here
-        // *(addrPtr) = data;
-	iowrite32(data, addrPtr);
+	    iowrite32(data, addrPtr);
     }
 
     // Save the read data in the file
     used_buffer_size = sizeof(data) > sysfs_max_data_size ?
     sysfs_max_data_size : sizeof(data);
-    // memcpy(sysfs_buffer, data, used_buffer_size);
-    snprintf(sysfs_buffer, used_buffer_size, "%d", data);
+    snprintf(sysfs_buffer, used_buffer_size, "%lu", data);
     sysfs_buffer[used_buffer_size] = '\0';
 
     // Print debug info
     printk(KERN_INFO
             "sysfile_write (/sys/kernel/%s/%s called, buffer: "
-            "%s, bugger size: %u, count: %u\n", sysfs_dir, sysfs_file, buffer, used_buffer_size, count);
+            "%s, buffer size: %u, count: %u\n", sysfs_dir, sysfs_file, buffer, used_buffer_size, count);
 
     // return the buffer size
     return used_buffer_size;
