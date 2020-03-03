@@ -136,7 +136,7 @@ static ssize_t sysfs_store(struct device* dev,
         // Print debug info
         printk(
             KERN_INFO
-            "retrieved data: %lu\n",
+            "retrieved data: %lu\n\n",
             data
         );
     }
@@ -146,7 +146,7 @@ static ssize_t sysfs_store(struct device* dev,
         // Print debug info
         printk(
             KERN_INFO
-            "data: %lu, address: %lu\n",
+            "data: %lu, address: %lu\n\n",
             data,
             addrPtr
         );
