@@ -86,7 +86,7 @@ static ssize_t sysfs_store(struct device* dev,
     // Copy the last parameter to it
     // This can be overwritten later on if
     // in r mode
-    simple_strtoul(params[2], 0, &data);
+    data = simple_strtoul(params[2], 0, 16);
 
     // Check if one of the parameters is invalid
     if ((strcmp(params[0], "r") != 0 &&
@@ -109,7 +109,7 @@ static ssize_t sysfs_store(struct device* dev,
     // Convert address to the appropriate type
     // make it unsigned because it is an address
     u_long addr = 0;
-    simple_strtoul(params[1], 0, &addr);
+    addr = simple_strtoul(params[1], 0, 16);
     void* addrPtr = ioremap(addr, 32);
 
     // If we are in read mode
