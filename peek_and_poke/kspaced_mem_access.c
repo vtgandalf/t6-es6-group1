@@ -1,18 +1,15 @@
-/*
- * sysfs1.c - create a "subdir" with a readonly "file" in /sys
- *
- */
 #include <linux/device.h>
 #include <linux/kernel.h>  /* We're doing kernel work */
 #include <linux/kobject.h> /* Necessary because we use sysfs */
 #include <linux/module.h>  /* Specifically, a module */
+#include <asm/io.h>
 
 #define sysfs_dir "peek_and_poke"
 #define sysfs_input "input"
 #define sysfs_output "output"
 /* due to limitations of sysfs, you mustn't go above PAGE_SIZE, 1k is already a
  * *lot* of information for sysfs! */
-#define sysfs_max_data_size 1024
+#define sysfs_max_data_size 512
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Thimo Ferede");
@@ -78,15 +75,15 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
     i++;
   }
 
+  // Convert address to the appropriate type
+  // make it unsigned because it is an address
+  char* address_str = args[1];
+  u_long addr;
+  kstrtol(address_str, 0, &addr);
+  char* addrPtr = (char*)addr;
+
   if (args[0][0] == 'r'){
-    char* address_str = args[1];
     char* count_str = args[2];
-    
-    // Convert address to the appropriate type
-    // make it unsigned because it is an address
-    u_long addr;
-    kstrtol(address_str, 0, &addr);
-    char* addrPtr = addr;
 
     // Convert the entered number of byte
     // into the correct format
@@ -114,14 +111,7 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
     );
   }
   else if (args[0][0] == 'w'){
-    char* address_str = args[1];
     char* data = args[2];
-    
-    // Convert address to the appropriate type
-    // make it unsigned because it is an address
-    u_long addr;
-    kstrtol(address_str, 0, &addr);
-    char* addrPtr = addr;
     
     printk(KERN_INFO "Writing %s to address %ld\n", data, addr);
     
