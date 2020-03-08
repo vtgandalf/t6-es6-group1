@@ -17,7 +17,7 @@
 #include <linux/kobject.h>				// for sysfs
 #include <linux/device.h>				// for sysfs
 
-#include "pp_main.h"					// for generic defines
+#include "pp_generic.h"					// for generic defines
 #include "pp_iomem.h"					// for io access
 
 /************************************************************

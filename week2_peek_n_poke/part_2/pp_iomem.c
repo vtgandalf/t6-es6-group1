@@ -15,7 +15,7 @@
 #include <linux/module.h>				// required for module
 #include <asm/io.h>						// for io_remap and r/w
 
-#include "pp_main.h"					// for generic defines
+#include "pp_generic.h"					// for generic defines
 
 /************************************************************
 *	Static data

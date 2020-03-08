@@ -9,11 +9,10 @@
 /************************************************************
 *	Includes
 ************************************************************/
-#include "pp_main.h"
-
 #include <linux/kernel.h>				// kernel work
 #include <linux/module.h>				// required for module
 
+#include "pp_generic.h"					// for generic defines
 #include "pp_sysfs.h"					// for sysfs ops
 
 MODULE_LICENSE ("GPL");
