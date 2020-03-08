@@ -91,10 +91,7 @@ int pp_sysfs_init (void)
 
     if (result != SUCCESS)
     {
-        // failed to create files. remove parent directory.
         printk (KERN_INFO "module failed to load: sysfs_create_group failed with result %d\n", result);
-        
-		// remove reference to sysfs object
 		kobject_put(sysfs_obj); 
         return -ENOMEM;
     }
@@ -119,16 +116,13 @@ static ssize_t lpc_cmd_store (struct device *dev, struct device_attribute *attr,
 	int internal_buffer_size = 0;
 	input_param input = {0};
 
-	// notify us if user gives a really long input
 	if (count > SYSFS_MAX_BUF_LEN)
 		printk (KERN_ALERT "[pp_sysfs] User buffer larger than internal buffer\n");
 	
-	// continue anyway
 	internal_buffer_size = count > SYSFS_MAX_BUF_LEN ? SYSFS_MAX_BUF_LEN : count;
 	memcpy (internal_buffer, buffer, internal_buffer_size);
 	internal_buffer[internal_buffer_size] = '\0';
-	
-	// store input, if possible
+
 	if (parse_string(internal_buffer, PROTOCOL_DELIM, &input) == SUCCESS)
 	{
 		if (input.op == PROTOCOL_READ_OP)
@@ -176,20 +170,16 @@ static void do_write (input_param input)
 
 static int parse_string (char* src, char* delim, input_param* output)
 {
-	// null check parameters
 	if (src == NULL || delim == NULL || output == NULL)
 		return -ENOMEM;
 		
-	// duplicate source string (allocated on behalf of kernel)
 	char* dup = kmalloc (strlen(src) + 1, GFP_KERNEL);
 	
-	// failed allocation 
 	if (dup == NULL)
 		return -ENOMEM;
 	else 
 		strcpy (dup, src);
 	
-	// parse
 	int i = 0; 
 	char* param_str;
 
@@ -199,7 +189,7 @@ static int parse_string (char* src, char* delim, input_param* output)
 		switch (i)
 		{
 			case PROTOCOL_INDEX_OP:
-				output->op = param_str[0]; // take the first character
+				output->op = param_str[0];
 				break;
 			case PROTOCOL_INDEX_ADDR:
                 output->addr = simple_strtoul (param_str, NULL, HEXADECIMAL_BASE);
