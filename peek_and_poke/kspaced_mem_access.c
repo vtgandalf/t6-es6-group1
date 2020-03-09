@@ -10,6 +10,9 @@
 /* due to limitations of sysfs, you mustn't go above PAGE_SIZE, 1k is already a
  * *lot* of information for sysfs! */
 #define sysfs_max_data_size 512
+#define arg_count 3
+#define arg_max_length 32
+#define address_size 4
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_AUTHOR("Thimo Ferede");
@@ -43,7 +46,7 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
   input_buffer[used_buffer_size] = '\0';
   
   if (used_buffer_size == 0){
-    printk(KERN_INFO "No input given");
+    printk(KERN_INFO "I dont know what you want me to do. (no input given)");
     return 0;
   }
 
@@ -55,12 +58,12 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
   char* bufferPtr = temp;
   
   // Store the command arguments
-  char args[3][64];
+  char args[arg_count][arg_max_length];
 
   // Fetch the arguments
   // Using while since for doesn't want to compile
   int i = 0;
-  while (i < 3)
+  while (i < arg_count)
   {
     // Fetch argument i
     char* arg = strsep(&bufferPtr, " ");
@@ -79,16 +82,17 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
   // make it unsigned because it is an address
   char* address_str = args[1];
   u_long addr;
-  kstrtol(address_str, 0, &addr);
-  char* addrPtr = (char*)addr;
+  simple_strtoul(address_str, 0, &addr);
+  char* addrPtr = ioremap((char*)addr, address_size);
 
   if (args[0][0] == 'r'){
+    // Handle data reading
     char* count_str = args[2];
 
     // Convert the entered number of byte
     // into the correct format
     long nr_bytes;
-    kstrtol(count_str, 0, &nr_bytes);
+    simple_strtol(count_str, 0, &nr_bytes);
     
     printk(KERN_INFO "Reading %ld bytes from address %ld\n", nr_bytes, addr);
 
@@ -96,8 +100,9 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
     i = 0;
     while (i < nr_bytes)
     {
-        output_buffer[i] = *(addrPtr + i);
-        i++;
+      output_buffer[i] = (char*)ioread8(addrPtr + i);
+      iounmap(addrPtr);
+      i++;
     }
     
     // Mark end
@@ -111,6 +116,7 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
     );
   }
   else if (args[0][0] == 'w'){
+    // Handle data writing
     char* data = args[2];
     
     printk(KERN_INFO "Writing %s to address %ld\n", data, addr);
@@ -119,8 +125,8 @@ static ssize_t input_store(struct device *dev, struct device_attribute *attr,
     i = 0;
     while (data[i] != '\0')
     {
-        *(addrPtr + i) = data[i];
-        i++;
+      iowrite8(data[i], addrPtr + i);
+      i++;
     }
   }
 
@@ -132,6 +138,13 @@ static ssize_t output_show(struct device *dev, struct device_attribute *attr,
 {
   printk(KERN_INFO "output_read (/sys/kernel/%s/%s) called\n", sysfs_dir,
          sysfs_output);
+  
+  if (strlen(output_buffer) == 0)
+  {
+    return sprintf(
+      buffer, 
+      "I have nothing for you");
+  }
   
   return sprintf(buffer, output_buffer);
 }
@@ -170,14 +183,14 @@ int __init sysfs_init(void)
     return -ENOMEM;
   }
 
-  printk(KERN_INFO "/sys/kernel/%s created\n", sysfs_dir);
+  printk(KERN_INFO "/sys/kernel/%s is born\n", sysfs_dir);
   return result;
 }
 
 void __exit sysfs_exit(void)
 {
   kobject_put(data_obj);
-  printk(KERN_INFO "/sys/kernel/%s removed\n", sysfs_dir);
+  printk(KERN_INFO "/sys/kernel/%s is killed\n", sysfs_dir);
 }
 
 module_init(sysfs_init);

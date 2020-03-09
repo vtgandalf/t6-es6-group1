@@ -1,14 +1,41 @@
-# Add module object to kmake
-# $(obj-m) specifies object files which are built as loadable kernel modules 
-# See: https://www.kernel.org/doc/Documentation/kbuild/makefiles.txt
+# Flags
+UCFLAGS=-Wall
+
+# Kernel modules
 obj-m += kspaced_mem_access.o
 
-# Location of build folder
-# (uname -r is the release version of the kernel)
-BUILD_FOLDER=/lib/modules/$(shell uname -r)/build
+# Kernel version
+VERSION=$(shell uname -r)
 
-all:
-	make -C $(BUILD_FOLDER) M=$(PWD) modules
+# Kernel source location
+KSRC=/lib/modules/$(VERSION)/build
 
+# Cross Compilation Configuration
+ARCH=arm
+LPC_KSRC=../linux-2.6.34/
+
+# Cross compiler prefix
+CROSS_COMPILE=/usr/local/xtools/arm-unknown-linux-uclibcgnueabi/bin/arm-linux-
+
+# Targets
+all: local lpc
+
+local:
+	@ echo "=== COMPILE FOR LOCAL ENVIRONMENT ==="
+	make -C $(KSRC) M=$(PWD) modules
+
+lpc:
+	@ echo "=== CROSS COMPILATION TO LPC3250 ==="
+	@ echo "Kernel source: $(LPC_KSRC)"
+	make -C $(LPC_KSRC) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+
+ifneq ($(LPC_KSRC),)
 clean:
-	make -C $(BUILD_FOLDER) M=$(PWD) clean
+	# make user_space.clean
+	make -C $(KSRC) M=$(PWD) clean
+	make -C $(LPC_KSRC) M=$(PWD) clean
+else
+clean:
+	# make user_space.clean
+	make -C $(KSRC) M=$(PWD) clean
+endif

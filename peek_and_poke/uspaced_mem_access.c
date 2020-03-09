@@ -2,7 +2,7 @@
 
 int main(void)
 {
-    char* rtc_up_counter = (char*)0x40024000;
-    printf("%c",(char)*rtc_up_counter);
+    (unsigned long)* rtc_up_counter = ((unsigned long)*)0x40024000;
+    printf("%ul",(unsigned long)*rtc_up_counter);
     return 0;
 }
