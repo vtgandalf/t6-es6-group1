@@ -180,13 +180,18 @@ static int parse_string (char* src, char* delim, input_param* output)
 		strcpy (dup, src);
 
 	int i = 0;
+	int argument_ok = TRUE;
 	char* param_str;
 
 	for (i = 0; i < PROTOCOL_MAX_INDEX; i++)
 	{
 		param_str = strsep(&dup, delim);
+
 		if (dup == NULL || strcmp(param_str, "") == 0)
+		{
+			argument_ok = FALSE;
 			break;
+		}
 
 		switch (i)
 		{
@@ -206,8 +211,7 @@ static int parse_string (char* src, char* delim, input_param* output)
 
 	kfree (dup);
 
-	printk(KERN_INFO "i is %i\n", i);
-	if (i < PROTOCOL_MAX_INDEX)
+	if (!argument_ok)
 	{
 		printk(KERN_INFO "Not all parameters have been entered.\n");
 		return -ENOMEM;
