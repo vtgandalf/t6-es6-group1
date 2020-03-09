@@ -30,16 +30,17 @@ int pp_iomem_read_4_bytes (unsigned long address, unsigned long* output)
 {
     if (output == NULL)
 		return ERROR;
-    
+
     int result = SUCCESS;
-			
+
 	void __iomem* iomem_region = ioremap (address, FOUR_BYTES_SIZE);
 
 	if (iomem_region == NULL)
 	{
+		result = ERROR;
 		printk (KERN_INFO "Failed to map mem region for address 0x%08x\n", address);
 	}
-	else 
+	else
 	{
 		*output = ioread32 (iomem_region);
 		iounmap(iomem_region);
@@ -48,18 +49,21 @@ int pp_iomem_read_4_bytes (unsigned long address, unsigned long* output)
     return result;
 }
 
-void pp_iomem_write_4_bytes (unsigned long address, unsigned long value)
+int pp_iomem_write_4_bytes (unsigned long address, unsigned long value)
 {
+	int result = SUCCESS;
 	void __iomem* iomem_region = ioremap (address, FOUR_BYTES_SIZE);
-	
+
 	if (iomem_region == NULL)
 	{
+		result = ERROR;
 		printk (KERN_INFO "Failed to map mem region for address 0x%08x\n", address);
 	}
-	else 
+	else
 	{
 		iowrite32 (value, iomem_region);
-		printk (KERN_INFO "Write OK!\n");
 		iounmap (iomem_region);
 	}
+
+	return result;
 }

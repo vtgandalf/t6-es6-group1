@@ -15,21 +15,21 @@ VERSION=$(shell uname -r)
 # Kernel source location
 KSRC=/lib/modules/$(VERSION)/build
 LPC_KSRC=/home/student/Downloads/linux-2.6.34
-# 
+#
 #	Cross Compilation Configuration
-# 
+#
 
 # Architecture
 ARCH=arm
 
-# Cross compiler prefix 
+# Cross compiler prefix
 CROSS_COMPILE=/usr/local/xtools/arm-unknown-linux-uclibcgnueabi/bin/arm-linux-
 
 #
 #	Targets
 #
 
-all: local lpc 
+all: local lpc
 
 local:
 	@ echo "=== COMPILE FOR LOCAL ENVIRONMENT ==="

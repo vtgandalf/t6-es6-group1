@@ -25,22 +25,22 @@
 ************************************************************/
 
 #define SYSFS_DIR               "lpc_comm"
-#define SYSFS_MAX_BUF_LEN       1024		
+#define SYSFS_MAX_BUF_LEN       1024
 #define SYSFS_MAX_INPUT_LEN     100         // enough for a 32 bit address string
 
 #define PROTOCOL_INDEX_OP       0
 #define PROTOCOL_INDEX_ADDR     1
 #define PROTOCOL_INDEX_DATA     2
-#define PROTOCOL_DELIM	        " "     
-#define PROTOCOL_MAX_INDEX      3  
+#define PROTOCOL_DELIM	        " "
+#define PROTOCOL_MAX_INDEX      3
 #define PROTOCOL_READ_OP        'r'
 #define PROTOCOL_WRITE_OP       'w'
 
 #define REGISTER_SIZE           4       	// (in bytes)
-#define HEXADECIMAL_BASE	    16 
+#define HEXADECIMAL_BASE	    16
 
 typedef struct input_param_t {
-	char 			op; 
+	char 			op;
 	unsigned long 	addr;
 	char           data[SYSFS_MAX_INPUT_LEN];
 } input_param;
@@ -78,7 +78,7 @@ static int parse_string (char* src, char* delim, input_param* output);
 int pp_sysfs_init (void)
 {
 	int result = SUCCESS;
-	
+
     sysfs_obj = kobject_create_and_add(SYSFS_DIR, kernel_kobj);
 
     if (sysfs_obj == NULL)
@@ -92,7 +92,7 @@ int pp_sysfs_init (void)
     if (result != SUCCESS)
     {
         printk (KERN_INFO "module failed to load: sysfs_create_group failed with result %d\n", result);
-		kobject_put(sysfs_obj); 
+		kobject_put(sysfs_obj);
         return -ENOMEM;
     }
 
@@ -118,7 +118,7 @@ static ssize_t lpc_cmd_store (struct device *dev, struct device_attribute *attr,
 
 	if (count > SYSFS_MAX_BUF_LEN)
 		printk (KERN_ALERT "[pp_sysfs] User buffer larger than internal buffer\n");
-	
+
 	internal_buffer_size = count > SYSFS_MAX_BUF_LEN ? SYSFS_MAX_BUF_LEN : count;
 	memcpy (internal_buffer, buffer, internal_buffer_size);
 	internal_buffer[internal_buffer_size] = '\0';
@@ -133,19 +133,19 @@ static ssize_t lpc_cmd_store (struct device *dev, struct device_attribute *attr,
 		{
 			do_write (input);
 		}
-		else 
+		else
 		{
 			printk (KERN_ALERT "[pp_sysfs] Unknown operation given %c\n", input.op);
 		}
 	}
-	
+
 	return internal_buffer_size;
 }
 
 static void do_read (input_param input)
 {
 	int nr_of_registers = 0;
-	
+
 	if (sscanf (input.data, "%d", &nr_of_registers) != 0)
 	{
 		int reg = 0;
@@ -155,32 +155,31 @@ static void do_read (input_param input)
 			unsigned long temp_data = 0;
 			if (pp_iomem_read_4_bytes (current_addr, &temp_data) == SUCCESS)
 				printk (KERN_INFO "Addr [0x%08x] = %lu\n", current_addr, temp_data);
-		}	
+		}
 	}
 }
 
 static void do_write (input_param input)
 {
 	unsigned long new_value = 0;
-	if (sscanf (input.data, "%x", &new_value) != 0) 
-	{
-		pp_iomem_write_4_bytes (input.addr, new_value);
-	}
+	if (sscanf (input.data, "%x", &new_value) != 0 &&
+		pp_iomem_write_4_bytes (input.addr, new_value) == SUCCESS)
+		printk (KERN_INFO "Write OK!\n");
 }
 
 static int parse_string (char* src, char* delim, input_param* output)
 {
 	if (src == NULL || delim == NULL || output == NULL)
 		return -ENOMEM;
-		
+
 	char* dup = kmalloc (strlen(src) + 1, GFP_KERNEL);
-	
+
 	if (dup == NULL)
 		return -ENOMEM;
-	else 
+	else
 		strcpy (dup, src);
-	
-	int i = 0; 
+
+	int i = 0;
 	char* param_str;
 
 	for (i = 0; i < PROTOCOL_MAX_INDEX; i++)
@@ -201,8 +200,8 @@ static int parse_string (char* src, char* delim, input_param* output)
                 break;
 		}
 	}
-	
+
 	kfree (dup);
-	
+
 	return SUCCESS;
 }
