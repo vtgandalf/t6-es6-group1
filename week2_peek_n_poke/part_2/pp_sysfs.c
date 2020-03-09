@@ -204,13 +204,13 @@ static int parse_string (char* src, char* delim, input_param* output)
 		}
 	}
 
+	kfree (dup);
+
 	if (i < PROTOCOL_MAX_INDEX - 1)
 	{
-		printk(KERN_INFO "Not all parameters have been entered.");
+		printk(KERN_INFO "Not all parameters have been entered.\n");
 		return -ENOMEM;
 	}
-
-	kfree (dup);
 
 	return SUCCESS;
 }
