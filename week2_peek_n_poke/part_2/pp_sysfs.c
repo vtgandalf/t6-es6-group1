@@ -182,9 +182,12 @@ static int parse_string (char* src, char* delim, input_param* output)
 	int i = 0;
 	char* param_str;
 
-	for (i = 0; i < PROTOCOL_MAX_INDEX; i++)
+	for (; i < PROTOCOL_MAX_INDEX; i++)
 	{
 		param_str = strsep(&dup, delim);
+		if (param_str == NULL)
+			break;
+
 		switch (i)
 		{
 			case PROTOCOL_INDEX_OP:
@@ -200,6 +203,9 @@ static int parse_string (char* src, char* delim, input_param* output)
                 break;
 		}
 	}
+
+	if (i < PROTOCOL_MAX_INDEX - 1)
+		printk(KERN_INFO "Not all parameters have been entered.");
 
 	kfree (dup);
 
