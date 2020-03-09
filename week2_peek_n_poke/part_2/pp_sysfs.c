@@ -185,7 +185,7 @@ static int parse_string (char* src, char* delim, input_param* output)
 	for (i = 0; i < PROTOCOL_MAX_INDEX; i++)
 	{
 		param_str = strsep(&dup, delim);
-		if (param_str == NULL)
+		if (dup == NULL || strcmp(param_str, "") == 0)
 			break;
 
 		switch (i)
@@ -206,7 +206,8 @@ static int parse_string (char* src, char* delim, input_param* output)
 
 	kfree (dup);
 
-	if (i < PROTOCOL_MAX_INDEX - 1)
+	printk(KERN_INFO "i is %i\n", i);
+	if (i < PROTOCOL_MAX_INDEX)
 	{
 		printk(KERN_INFO "Not all parameters have been entered.\n");
 		return -ENOMEM;
