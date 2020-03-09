@@ -14,7 +14,7 @@ VERSION=$(shell uname -r)
 
 # Kernel source location
 KSRC=/lib/modules/$(VERSION)/build
-LPC_KSRC=/home/student/Downloads/linux-2.6.34
+LPC_KSRC=./../../linux-2.6.34
 #
 #	Cross Compilation Configuration
 #
