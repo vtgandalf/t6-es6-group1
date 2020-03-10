@@ -1,9 +1,7 @@
 /**
-* @file pp_main.c
-* @author Thanh Hoang
-* @date 05/03/2020
-* @brief Assignment Part 2: Read and write to I/O register
-*		 Module entry and exit
+* @file 	pp_main.c
+* @brief	Peek and Poke Main Module
+*		 	Implement module entry/exit
 */
 
 /************************************************************

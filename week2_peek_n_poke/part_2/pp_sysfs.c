@@ -1,9 +1,7 @@
 /**
-* @file pp_sysfs.c
-* @author Thanh Hoang
-* @date 05/03/2020
-* @brief Assignment Part 2: Read and write to I/O register
-*		 Handle sysfs input and output
+* @file 	pp_sysfs.c
+* @brief	Peek and Poke Main Module
+*		 	Handle sysfs operations
 */
 
 /************************************************************
@@ -23,27 +21,20 @@
 /************************************************************
 *	Defines
 ************************************************************/
-
 #define SYSFS_DIR               "lpc_comm"
-#define SYSFS_MAX_BUF_LEN       1024
-#define SYSFS_MAX_INPUT_LEN     100         // enough for a 32 bit address string
+#define SYSFS_MAX_BUF_LEN       (1024)
+#define SYSFS_MAX_INPUT_LEN     (100)         // enough for a 32 bit address string
 
-#define PROTOCOL_INDEX_OP       0
-#define PROTOCOL_INDEX_ADDR     1
-#define PROTOCOL_INDEX_DATA     2
+#define PROTOCOL_INDEX_OP       (0)
+#define PROTOCOL_INDEX_ADDR     (1)
+#define PROTOCOL_INDEX_DATA     (2)
 #define PROTOCOL_DELIM	        " "
-#define PROTOCOL_MAX_INDEX      3
+#define PROTOCOL_MAX_INDEX      (3)
 #define PROTOCOL_READ_OP        'r'
 #define PROTOCOL_WRITE_OP       'w'
 
-#define REGISTER_SIZE           4       	// (in bytes)
-#define HEXADECIMAL_BASE	    16
-
-typedef struct input_param_t {
-	char 			op;
-	unsigned long 	addr;
-	char           data[SYSFS_MAX_INPUT_LEN];
-} input_param;
+#define REGISTER_SIZE           (4)       	// (in bytes)
+#define HEXADECIMAL_BASE	    (16)
 
 /************************************************************
 *	Sysfs configuration
@@ -67,6 +58,12 @@ static struct kobject* sysfs_obj = NULL;
 /************************************************************
 *	Static data
 ************************************************************/
+typedef struct input_param_t {
+	char 			op;
+	unsigned long 	addr;
+	char           data[SYSFS_MAX_INPUT_LEN];
+} input_param;
+
 static void do_read (input_param input);
 static void do_write (input_param input);
 static int parse_string (char* src, char* delim, input_param* output);

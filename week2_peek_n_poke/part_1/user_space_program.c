@@ -1,8 +1,5 @@
 /*
-* @file     read_addr.c
-* @author   Thanh Hoang
-* @date     03/03/2020
-*
+* @file     user_space_program.c
 * @brief    Read up counter address from user space
 */
 
@@ -10,7 +7,7 @@
 #include <sys/types.h> 	// for getpid()
 #include <unistd.h>		// for getpid()
 
-#define COUNTER_ADDR	(0X40024000)
+#define COUNTER_ADDR	(0x40024000)
 
 int main (void)
 {

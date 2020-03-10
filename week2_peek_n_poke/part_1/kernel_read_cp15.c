@@ -1,8 +1,5 @@
 /*
-* @file     read_reg.c
-* @author   Thanh Hoang
-* @date     03/03/2020
-*
+* @file     kernel_read_cp15.c
 * @brief    Kernel module to read control register
 */
 

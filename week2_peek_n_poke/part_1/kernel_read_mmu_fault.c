@@ -1,14 +1,13 @@
 /*
-* @file     read_fault.c
-* @author   Thanh Hoang
-* @date     03/03/2020
-*
+* @file     kernel_read_mmu_fault.c
 * @brief    Kernel module to test if a read to up counter address 
 *			w/o mapping results in a fault
 */
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+
+#define COUNTER_ADDR	(0x40024000)
 
 MODULE_LICENSE ("GPL");
 
@@ -23,7 +22,7 @@ static int local_init (void)
 	printk (KERN_INFO "=== Starting module ===\n");
 
     // perform a read without mapping
-	int* raw_addr = 0x40024000;
+	int* raw_addr = COUNTER_ADDR;
     printk (KERN_INFO "Now attempt to read from up counter address");
 	printk (KERN_INFO "Value at 0x%x = 0x%x\n", raw_addr, *raw_addr);
 
