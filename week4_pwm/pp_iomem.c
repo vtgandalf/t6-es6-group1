@@ -1,9 +1,8 @@
 /**
-* @file pp_iomem.c
-* @author Thanh Hoang
-* @date 05/03/2020
-* @brief Assignment Part 2: Read and write to I/O register
-*		 Handle direct read/write to physical memory
+* @file 	pp_iomem.c
+* @author 	Thanh Hoang
+* @date 	05/03/2020
+* @brief 	Handle direct read/write to physical memory
 */
 
 /************************************************************
