@@ -12,6 +12,7 @@
 
 #include <linux/kernel.h>				// kernel work
 #include <linux/module.h>				// required for module
+#include <linux/types.h>                // for uint8_t
 
 #include "es6_generic.h"				// for generic defines
 #include "pp_iomem.h"                   // reuse from peek and poke
@@ -21,9 +22,6 @@
 ************************************************************/
 
 #define PWM_CLK                         (13000000)
-
-#define PWM1_ID                         (0)
-#define PWM2_ID                         (1)
 
 #define PWM1_CTRL_REG_ADDR              (0x4005C000)
 #define PWM2_CTRL_REG_ADDR              (0x4005C004)
@@ -54,40 +52,40 @@
 *	Static data
 ************************************************************/
 
-static int get_ctrl_reg_address (int pwm_id, unsigned long* output);
-static int read_data (int pwm_id, unsigned long bitmask, int start_bit_nr, uint8_t* output);
-static int write_data (int pwm_id, int start_bit_nr, uint8_t new_byte_value);
+static int get_ctrl_reg_address (pwm_enum pwm, unsigned long* output);
+static int read_data (pwm_enum pwm, unsigned long bitmask, int start_bit_nr, uint8_t* output);
+static int write_data (pwm_enum pwm, int start_bit_nr, uint8_t new_byte_value);
 
 /************************************************************
 *	Public functions
 ************************************************************/
 
-int pwm_ctrl_read_enable (int pwm_id, uint8_t* output)
+int pwm_ctrl_read_enable (pwm_enum pwm, int* output)
 {
     if (output == NULL)
         return ERROR;
 
     int result = SUCCESS;
 
-    result = read_data (pwm_id, PWM_ENABLE_BITMASK, PWM_ENABLE_START_BIT_NR, output);
+    result = read_data (pwm, PWM_ENABLE_BITMASK, PWM_ENABLE_START_BIT_NR, (uint8_t*)(output));
 
     return result;
 }
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_enable (int pwm_id, int new_value)
+int pwm_ctrl_write_enable (pwm_enum pwm, int new_value)
 {
     int result = SUCCESS;
     
-    result = write_data (pwm_id, PWM_ENABLE_START_BIT_NR, (uint8_t)(new_value));
+    result = write_data (pwm, PWM_ENABLE_START_BIT_NR, (uint8_t)(new_value));
 
     return result;
 }
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_read_freq (int pwm_id, int* output)
+int pwm_ctrl_read_freq (pwm_enum pwm, int* output)
 {
     if (output == NULL)
         return ERROR;
@@ -96,7 +94,7 @@ int pwm_ctrl_read_freq (int pwm_id, int* output)
 
     uint8_t reload_value = 0;
 
-    result = read_data (pwm_id, PWM_FREQ_BITMASK, PWM_FREQ_START_BIT_NR, &reload_value);
+    result = read_data (pwm, PWM_FREQ_BITMASK, PWM_FREQ_START_BIT_NR, &reload_value);
 
     if (result == SUCCESS)
     {
@@ -111,20 +109,20 @@ int pwm_ctrl_read_freq (int pwm_id, int* output)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_freq (int pwm_id, int new_value)
+int pwm_ctrl_write_freq (pwm_enum pwm, int new_value)
 {
     int result = SUCCESS;
 
     uint8_t reload_value = PWM_FREQ_TO_RELOAD(new_value);
 
-    result = write_data (pwm_id, PWM_FREQ_START_BIT_NR, reload_value);
+    result = write_data (pwm, PWM_FREQ_START_BIT_NR, reload_value);
 
     return result;
 }
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_read_duty (int pwm_id, uint8_t* output)
+int pwm_ctrl_read_duty (pwm_enum pwm, int* output)
 {
     if (output == NULL)
         return ERROR;
@@ -133,7 +131,7 @@ int pwm_ctrl_read_duty (int pwm_id, uint8_t* output)
 
     uint8_t duty_value = 0;
 
-    result = read_data (pwm_id, PWM_DUTY_BITMASK, PWM_DUTY_START_BIT_NR, &duty_value);
+    result = read_data (pwm, PWM_DUTY_BITMASK, PWM_DUTY_START_BIT_NR, &duty_value);
 
     if (result == SUCCESS)
     {
@@ -144,13 +142,13 @@ int pwm_ctrl_read_duty (int pwm_id, uint8_t* output)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_duty (int pwm_id, int new_value)
+int pwm_ctrl_write_duty (pwm_enum pwm, int new_value)
 {
     int result = SUCCESS;
 
     uint8_t duty_value = PWM_DUTY_TO_DUTY_VALUE(new_value);
 
-    result = write_data (pwm_id, PWM_DUTY_START_BIT_NR, duty_value);
+    result = write_data (pwm, PWM_DUTY_START_BIT_NR, duty_value);
     
     return result;
 }
@@ -159,19 +157,19 @@ int pwm_ctrl_write_duty (int pwm_id, int new_value)
 *	Static functions
 ************************************************************/
 
-static int get_ctrl_reg_address (int pwm_id, unsigned long* output)
+static int get_ctrl_reg_address (pwm_enum pwm, unsigned long* output)
 {
     if (output == NULL)
         return ERROR;
 
     int result = SUCCESS;
     
-    switch (pwm_id)
+    switch (pwm)
     {
-        case PWM1_ID:
+        case PWM_1:
             *output = PWM1_CTRL_REG_ADDR;
             break;
-        case PWM2_ID:
+        case PWM_2:
             *output = PWM2_CTRL_REG_ADDR;
             break;
         default:
@@ -184,7 +182,7 @@ static int get_ctrl_reg_address (int pwm_id, unsigned long* output)
 
 // ------------------------------------------------------------ //
 
-static int read_data (int pwm_id, unsigned long bitmask, int start_bit_nr, uint8_t* output)
+static int read_data (pwm_enum pwm, unsigned long bitmask, int start_bit_nr, uint8_t* output)
 {
     int result = SUCCESS;
 
@@ -192,7 +190,7 @@ static int read_data (int pwm_id, unsigned long bitmask, int start_bit_nr, uint8
 
     unsigned long ctrl_reg_data;
 
-    result = get_ctrl_reg_address (pwm_id, &ctrl_reg_addr);
+    result = get_ctrl_reg_address (pwm, &ctrl_reg_addr);
     
     if (result == SUCCESS)
     {
@@ -209,7 +207,7 @@ static int read_data (int pwm_id, unsigned long bitmask, int start_bit_nr, uint8
 
 // ------------------------------------------------------------ //
 
-static int write_data (int pwm_id, int start_bit_nr, uint8_t new_byte_value)
+static int write_data (pwm_enum pwm, int start_bit_nr, uint8_t new_byte_value)
 {
     int result = SUCCESS;
 
@@ -217,7 +215,7 @@ static int write_data (int pwm_id, int start_bit_nr, uint8_t new_byte_value)
     
     unsigned long ctrl_reg_data;
 
-    result = get_ctrl_reg_address (pwm_id, &ctrl_reg_addr);
+    result = get_ctrl_reg_address (pwm, &ctrl_reg_addr);
 
     if (result == SUCCESS)
     {
