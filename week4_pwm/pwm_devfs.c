@@ -23,8 +23,12 @@
 /************************************************************
 *	Defines
 ************************************************************/
+#define NR_OF_PWMS              (2)
+#define PWM1_ID                 (0)
+#define PWM2_ID                 (1)
 
 #define NR_DEV_NODES_PER_PWM    (3)
+#define NR_OF_MINOR_HANDLERS    (NR_OF_PWMS*NR_DEV_NODES_PER_PWM)
 #define MAX_USER_INPUT_LEN      (256)
 #define MINOR_UNKNOWN           (-1)
 #define PWM_DATA_ENABLE         (0)
@@ -38,25 +42,44 @@ typedef struct pwm_data_t {
     int data_type;
 } pwm_data;
 
+typedef struct pwm_data_handler_t {
+    int (*read) (int, int*);
+    int (*write) (int, int);
+} pwm_data_handler;
+
 /************************************************************
 *	Static data
 ************************************************************/
 
 static int is_device_open = FALSE;
-static unsigned int current_minor = MINOR_UNKNOWN;
 
 static int device_open(struct inode *, struct file *);
 static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
 
-static int get_pwm_data_from_minor_nr (pwm_data* output);
-
 static struct file_operations fops = {
     .open = device_open,
     .release = device_release,
     .read = device_read,
     .write = device_write
+};
+
+/** @brief Handler lookup table, indexed by data type */
+static const pwm_data_handler pwm_data_handlers[NR_DEV_NODES_PER_PWM] = {
+    { pwm_ctrl_read_enable,   pwm_ctrl_write_enable },
+    { pwm_ctrl_read_freq,     pwm_ctrl_write_freq },
+    { pwm_ctrl_read_duty,     pwm_ctrl_write_duty }
+};
+
+/** @brief PWM data look up table, indexed by minor number */
+static const pwm_data minor_to_pwm_data[NR_OF_MINOR_HANDLERS] = {
+    { PWM1_ID, PWM_DATA_ENABLE },
+    { PWM1_ID, PWM_DATA_FREQ },
+    { PWM1_ID, PWM_DATA_DUTY },
+    { PWM2_ID, PWM_DATA_ENABLE },
+    { PWM2_ID, PWM_DATA_FREQ },
+    { PWM2_ID, PWM_DATA_DUTY }
 };
 
 /************************************************************
@@ -95,7 +118,7 @@ static int device_open(struct inode *inode, struct file *file)
     if (result == SUCCESS)
     {
         is_device_open = TRUE;
-        current_minor = MINOR(inode->i_rdev);
+        file->private_data = &minor_to_pwm_data[MINOR(inode->i_rdev)];
         try_module_get (THIS_MODULE);
     }
 
@@ -107,84 +130,84 @@ static int device_open(struct inode *inode, struct file *file)
 static int device_release(struct inode *inode, struct file *file)
 {
     is_device_open = FALSE;
-    current_minor = MINOR_UNKNOWN;
+    file->private_data = NULL;
     module_put(THIS_MODULE);
     return SUCCESS;
 }
 
 // ------------------------------------------------------------ //
-
-static ssize_t device_read(struct file *filp, char *buffer, size_t size, loff_t * offset)
+static ssize_t device_read (struct file *file, char *buffer, size_t size, loff_t * offset)
 {
+    static int data = 0;
+
+    static int bytes_processed = 0;
+
+    int i = 0;
+
     int result = SUCCESS;
-    uint8_t data = 0;
-    pwm_data pwm = {0};
 
-    if (size <= 0)
-        return -ENOMEM;
+    char* data_p = &data;
+    
+    pwm_data* pwm = (pwm_data*)file->private_data;
 
-    result = get_pwm_data_from_minor_nr (&pwm);
-
-    if (result == SUCCESS)
+    if (bytes_processed == 0)
     {
-        switch (pwm.data_type)
+        result = pwm_data_handlers[pwm->data_type].read(pwm->id, &data);
+
+        if (result == SUCCESS)
         {
-            case PWM_DATA_ENABLE:
-                result = pwm_ctrl_read_enable (pwm.id, &data);
-                break;
-            case PWM_DATA_FREQ:
-                result = pwm_ctrl_read_freq (pwm.id, &data);
-                break;
-            case PWM_DATA_DUTY:
-                result = pwm_ctrl_read_duty (pwm.id, &data);
-                break;
+            *offset = 0;
         }
     }
 
-    if (result == SUCCESS)
+    for (i = 0; i < *offset; i++)
     {
-        result = put_user (data, buffer);
+        data_p++;   
+    }
+
+    while (bytes_processed < size 
+        && bytes_processed < sizeof(int)
+        && result == SUCCESS)
+    {
+        result = put_user (*data_p, buffer);
+        data_p++;
+        buffer++;
+        bytes_processed++;
+    }
+
+    *offset = bytes_processed;
+
+    if (bytes_processed >= sizeof(int))
+    {
+        bytes_processed = 0;
     }
 
     if (result == SUCCESS)
     {
-        printk ("[PWM%d] Written to user buffer data=%d\n", GET_PWM_NR_FROM_ID(pwm.id), data);
+        printk ("[PWM%d] data=%d; bytes processed=%d\n", GET_PWM_NR_FROM_ID(pwm->id), data, bytes_processed);
     }
-    
-    // We have one byte data, so on success, no need to call device_read() again.
-    return (result == SUCCESS) ? 0 : -EFAULT;
+
+    return bytes_processed;
 }
 
 // ------------------------------------------------------------ //
-
-static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
+static ssize_t device_write (struct file *file, const char *buffer, size_t length, loff_t *offset)
 {
     int result = SUCCESS;
 
     int i = 0;
-    uint8_t data = 0;
-    pwm_data pwm = {0};
+    int data = 0;
     char user_input[MAX_USER_INPUT_LEN];
+    pwm_data* pwm = (pwm_data*)(file->private_data);
     
-    result = get_pwm_data_from_minor_nr (&pwm);
-
-    if (result == SUCCESS)
+    for (i = 0; (i < length) && (i < MAX_USER_INPUT_LEN) && (result == SUCCESS); i++)
     {
-        for (i = 0; (i < length) && (i < MAX_USER_INPUT_LEN) && (result == SUCCESS); i++)
-        {
-            result = get_user (user_input[i], buffer + i);
-        }
-        user_input[i] = '\0';
+        result = get_user (user_input[i], buffer + i);
     }
 
     if (result == SUCCESS)
     {
-        int temp_data = 0;
-        if (sscanf (user_input, "%d", &temp_data) != 0)
-        {
-            data = GET_EIGHT_BIT_DATA(temp_data);
-        }
-        else 
+        if (sscanf (user_input, "%d", &data) == 0)
         {
             result = ERROR;
         }
@@ -192,38 +215,13 @@ static ssize_t device_write(struct file *filp, const char *buffer, size_t length
 
     if (result == SUCCESS)
     {
-        switch (pwm.data_type)
-        {
-            case PWM_DATA_ENABLE:
-                result = pwm_ctrl_write_enable (pwm.id, data);
-                break;
-            case PWM_DATA_FREQ:
-                result = pwm_ctrl_write_freq (pwm.id, data);
-                break;
-            case PWM_DATA_DUTY:
-                result = pwm_ctrl_write_duty (pwm.id, data);
-                break;
-        }
+        result = pwm_data_handlers[pwm->data_type].write(pwm->id, data);
     }
 
     if (result == SUCCESS)
     {
-        printk ("[PWM%d] Written to board data=%d\n", GET_PWM_NR_FROM_ID(pwm.id), data);
+        printk ("[PWM%d] Set data to [%d]\n", GET_PWM_NR_FROM_ID(pwm->id), data);
     }
 
     return i;
-}
-
-// ------------------------------------------------------------ //
-
-static int get_pwm_data_from_minor_nr (pwm_data* output)
-{
-    if (output == NULL)
-        return ERROR;
-
-    output->id = current_minor / NR_DEV_NODES_PER_PWM;
-
-    output->data_type = current_minor % NR_DEV_NODES_PER_PWM;
-
-    return SUCCESS;
 }

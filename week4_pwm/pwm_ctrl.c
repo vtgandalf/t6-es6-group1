@@ -76,18 +76,18 @@ int pwm_ctrl_read_enable (int pwm_id, uint8_t* output)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_enable (int pwm_id, uint8_t new_value)
+int pwm_ctrl_write_enable (int pwm_id, int new_value)
 {
     int result = SUCCESS;
     
-    result = write_data (pwm_id, PWM_ENABLE_START_BIT_NR, new_value);
+    result = write_data (pwm_id, PWM_ENABLE_START_BIT_NR, (uint8_t)(new_value));
 
     return result;
 }
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_read_freq (int pwm_id, uint8_t* output)
+int pwm_ctrl_read_freq (int pwm_id, int* output)
 {
     if (output == NULL)
         return ERROR;
@@ -111,7 +111,7 @@ int pwm_ctrl_read_freq (int pwm_id, uint8_t* output)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_freq (int pwm_id, uint8_t new_value)
+int pwm_ctrl_write_freq (int pwm_id, int new_value)
 {
     int result = SUCCESS;
 
@@ -144,7 +144,7 @@ int pwm_ctrl_read_duty (int pwm_id, uint8_t* output)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_duty (int pwm_id, uint8_t new_value)
+int pwm_ctrl_write_duty (int pwm_id, int new_value)
 {
     int result = SUCCESS;
 
