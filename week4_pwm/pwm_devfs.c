@@ -100,7 +100,14 @@ int pwm_devfs_initialize (void)
 
 void pwm_devfs_cleanup (void)
 {
+    if (is_device_open)
+    {
+        printk(KERN_ALERT "Cannot unregister device, because it is still open!\n");
+        return;
+    }
+
     unregister_chrdev (PWM_DEVFS_MAJOR_NUMBER, PWM_DEVFS_DEVICE_NAME);
+	printk (KERN_INFO "=== Module ended successfull ===\n");
 }
 
 /************************************************************
@@ -204,6 +211,7 @@ static ssize_t device_write (struct file *file, const char *buffer, size_t lengt
         if (sscanf (user_input, "%d", &data) == 0)
         {
             result = ERROR;
+            printk(KERNEL_WARNING "The data is invalid.");
         }
     }
 
