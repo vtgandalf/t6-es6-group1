@@ -14,10 +14,6 @@ PWM_DEV_ENABLE=/dev/pwm${PWM_ID}_enable
 PWM_DEV_FREQ=/dev/pwm${PWM_ID}_freq
 PWM_DEV_DUTY=/dev/pwm${PWM_ID}_duty
 
-PWM_CLK_DEV_ENABLE=/dev/pwm${PWM_ID}_clk_enable
-PWM_CLK_DEV_SRC=/dev/pwm${PWM_ID}_clk_src
-PWM_CLK_DEV_FREQ_DIV=/dev/pwm${PWM_ID}_clk_freq_div
-
 echo "======== TEST R/W ENABLE PWM$PWM_ID ======="
 echo ""
 
