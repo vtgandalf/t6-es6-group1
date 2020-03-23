@@ -211,7 +211,7 @@ static ssize_t device_write (struct file *file, const char *buffer, size_t lengt
         if (sscanf (user_input, "%d", &data) == 0)
         {
             result = ERROR;
-            printk(KERNEL_WARNING "The data is invalid.");
+            printk(KERN_ALERT "The data is invalid.");
         }
     }
 

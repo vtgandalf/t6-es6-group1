@@ -12,7 +12,6 @@
 
 #include <linux/kernel.h>				// kernel work
 #include <linux/module.h>				// required for module
-#include <linux/types.h>                // for uint8_t
 
 #include "es6_generic.h"				// for generic defines
 #include "pp_iomem.h"                   // reuse from peek and poke
@@ -60,25 +59,25 @@ static int write_data (pwm_enum pwm, int start_bit_nr, uint8_t new_byte_value);
 *	Public functions
 ************************************************************/
 
-int pwm_ctrl_read_enable (pwm_enum pwm, int* output)
+int pwm_ctrl_read_enable (pwm_enum pwm, uint8_t* output)
 {
     if (output == NULL)
         return ERROR;
 
     int result = SUCCESS;
 
-    result = read_data (pwm, PWM_ENABLE_BITMASK, PWM_ENABLE_START_BIT_NR, (uint8_t*)(output));
+    result = read_data (pwm, PWM_ENABLE_BITMASK, PWM_ENABLE_START_BIT_NR, output);
 
     return result;
 }
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_enable (pwm_enum pwm, int new_value)
+int pwm_ctrl_write_enable (pwm_enum pwm, uint8_t new_value)
 {
     int result = SUCCESS;
     
-    result = write_data (pwm, PWM_ENABLE_START_BIT_NR, (uint8_t)(new_value));
+    result = write_data (pwm, PWM_ENABLE_START_BIT_NR, new_value);
 
     return result;
 }
@@ -122,7 +121,7 @@ int pwm_ctrl_write_freq (pwm_enum pwm, int new_value)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_read_duty (pwm_enum pwm, int* output)
+int pwm_ctrl_read_duty (pwm_enum pwm, uint8_t* output)
 {
     if (output == NULL)
         return ERROR;
@@ -142,7 +141,7 @@ int pwm_ctrl_read_duty (pwm_enum pwm, int* output)
 
 // ------------------------------------------------------------ //
 
-int pwm_ctrl_write_duty (pwm_enum pwm, int new_value)
+int pwm_ctrl_write_duty (pwm_enum pwm, uint8_t new_value)
 {
     int result = SUCCESS;
 
