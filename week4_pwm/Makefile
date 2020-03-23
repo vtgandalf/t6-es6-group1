@@ -3,7 +3,7 @@
 # See: https://www.kernel.org/doc/Documentation/kbuild/makefiles.txt
 # obj-m += hello_world.o
 obj-m += PWMDriver.o
-PWMDriver-objs += pwm_main.o pwm_devfs.o pwm_ctrl.o pp_iomem.o
+PWMDriver-objs += pwm_main.o pwm_devfs.o pwm_ctrl.o pwm_clk_ctrl.o pp_iomem.o
 
 #
 #	Local Compilation Configuration

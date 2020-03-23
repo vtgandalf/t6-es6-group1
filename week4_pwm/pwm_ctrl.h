@@ -3,11 +3,7 @@
 
 #include <linux/types.h> // for uint8_t
 
-typedef enum pwm_enum_t {
-    PWM_UNKNOWN = 0,
-    PWM_1, 
-    PWM_2 
-} pwm_enum;
+#include "pwm_enum.h"
 
 int pwm_ctrl_read_enable (pwm_enum pwm, uint8_t* output);
 int pwm_ctrl_write_enable (pwm_enum pwm, uint8_t new_value);

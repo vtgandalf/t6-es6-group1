@@ -28,7 +28,7 @@ static const size_t FOUR_BYTES_SIZE = 4;
 int pp_iomem_read_4_bytes (unsigned long address, unsigned long* output)
 {
     if (output == NULL)
-		return ERROR;
+		return -EINVAL;
 
     int result = SUCCESS;
 
@@ -36,8 +36,7 @@ int pp_iomem_read_4_bytes (unsigned long address, unsigned long* output)
 
 	if (iomem_region == NULL)
 	{
-		result = ERROR;
-		printk (KERN_INFO "Failed to map mem region for address 0x%08x\n", address);
+		result = -ENOMEM;
 	}
 	else
 	{
@@ -55,8 +54,7 @@ int pp_iomem_write_4_bytes (unsigned long address, unsigned long value)
 
 	if (iomem_region == NULL)
 	{
-		result = ERROR;
-		printk (KERN_INFO "Failed to map mem region for address 0x%08x\n", address);
+		result = -ENOMEM;
 	}
 	else
 	{

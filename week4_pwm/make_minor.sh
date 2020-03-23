@@ -1,3 +1,4 @@
+echo "=== Making PWM minor files (major 250) ==="
 echo "Making minor files for PWM 1"
 mknod /dev/pwm1_enable c 250 0
 mknod /dev/pwm1_freq c 250 1
