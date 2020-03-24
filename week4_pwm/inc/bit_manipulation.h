@@ -6,4 +6,6 @@
 #define SET_NTH_BIT(v,n)                (v | (1 << n))
 #define CLEAR_NTH_BIT(v,n)              (v & ~(1<<n))
 
+int write_n_bits_from_src_to_dest (unsigned long src, unsigned long* dest, int n, int offset);
+
 #endif 

@@ -239,17 +239,11 @@ static int write_data (pwm_enum pwm, int bit_offset, uint8_t new_byte_value, int
 
     if (result == SUCCESS)
     {
-        int bit_pos = 0;
+        result = write_n_bits_from_src_to_dest (new_byte_value, &ctrl_reg_data, nr_of_bits, bit_offset);
+    }
 
-        for (bit_pos = 0; bit_pos < nr_of_bits; bit_pos++)
-        {
-            int bit_pos_with_offset = bit_pos + bit_offset;
-            uint8_t bit_value = GET_NTH_BIT(new_byte_value, bit_pos);
-            ctrl_reg_data = (bit_value == 0) ?
-                            CLEAR_NTH_BIT(ctrl_reg_data, bit_pos_with_offset) :
-                            SET_NTH_BIT(ctrl_reg_data, bit_pos_with_offset);
-        }
-
+    if (result == SUCCESS)
+    {
         result = pp_iomem_write_4_bytes (ctrl_reg_addr, ctrl_reg_data);
     }
 
