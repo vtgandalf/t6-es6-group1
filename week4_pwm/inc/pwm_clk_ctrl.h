@@ -5,8 +5,7 @@
 
 #include "pwm_enum.h"
 
-#define PWM_CLK_CTRL_RTC_CLK            (0)
-#define PWM_CLK_CTRL_PERIPH_CLK         (1)
+int pwm_clk_ctrl_get_frequency (pwm_enum pwm, int* frequency);
 
 int pwm_clk_ctrl_read_enable (pwm_enum pwm, uint8_t* output);
 int pwm_clk_ctrl_write_enable (pwm_enum pwm, uint8_t new_value);

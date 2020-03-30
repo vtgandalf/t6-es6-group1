@@ -1,6 +1,5 @@
 /**
 * @file 	pwm_devfs.c
-* @author 	Thanh Hoang
 * @brief 	Handle devfs read write
 */
 
@@ -24,11 +23,11 @@
 /************************************************************
 *	Defines
 ************************************************************/
+#define MAX_USER_INPUT_LEN      (256)
+
 #define NR_OF_PWMS              (2)
 #define NR_DEV_NODES_PER_PWM    (6)
 #define NR_OF_MINOR_HANDLERS    (NR_OF_PWMS*NR_DEV_NODES_PER_PWM)
-
-#define MAX_USER_INPUT_LEN      (256)
 
 // Keep data types consistent with indices of data handlers table
 #define PWM_DATA_ENABLE         (0)
@@ -57,14 +56,14 @@ static int device_release(struct inode *, struct file *);
 static ssize_t device_read(struct file *, char *, size_t, loff_t *);
 static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
 
+static int is_device_open = FALSE;
+
 static struct file_operations fops = {
     .open = device_open,
     .release = device_release,
     .read = device_read,
     .write = device_write
 };
-
-static int is_device_open = FALSE;
 
 /** @brief Handler lookup table, indexed by data type (PWM_DATA_[X]) */
 static const pwm_data_handler pwm_handlers_table[NR_DEV_NODES_PER_PWM] = {
@@ -104,7 +103,7 @@ int pwm_devfs_initialize (void)
 
     if (result != SUCCESS)
     {
-        printk (KERN_ALERT "Failed to register device with error code [%d]\n", result);
+        return -ENOMEM;
     }
 
     return result;
@@ -114,14 +113,7 @@ int pwm_devfs_initialize (void)
 
 void pwm_devfs_cleanup (void)
 {
-    if (is_device_open)
-    {
-        printk(KERN_ALERT "Cannot unregister device, because it is still open!\n");
-        return;
-    }
-
     unregister_chrdev (PWM_DEVFS_MAJOR_NUMBER, PWM_DEVFS_DEVICE_NAME);
-	printk (KERN_INFO "=== Module ended successfull ===\n");
 }
 
 /************************************************************
@@ -193,12 +185,9 @@ static ssize_t device_read (struct file *file, char *buffer, size_t size, loff_t
 
     if (bytes_processed >= sizeof(int))
     {
+        printk ("[device_read  PWM%d] data=%d, bytes_processed=%d\n", pwm->id + 1, data, bytes_processed);
+        data = 0;
         bytes_processed = 0;
-    }
-
-    if (result == SUCCESS)
-    {
-        printk ("[device_read  PWM%d] data=%d\n", pwm->id + 1, data);
     }
 
     return bytes_processed;
@@ -232,13 +221,9 @@ static ssize_t device_write (struct file *file, const char *buffer, size_t lengt
 
     if (result == SUCCESS)
     {
+        printk (KERN_INFO "[device_write  PWM%d] data=%d\n", pwm->id + 1, data);
         result = pwm_handlers_table[pwm->data_type].write(pwm->id, data);
     }
-
-    if (result == SUCCESS)
-    {
-        printk ("[device_write PWM%d] data=%d\n", pwm->id + 1, data);
-    }
-
+    
     return i;
 }

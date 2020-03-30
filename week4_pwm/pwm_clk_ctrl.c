@@ -1,6 +1,5 @@
 /**
 * @file 	pwm_clk_ctrl.c
-* @author 	Thanh Hoang
 * @brief 	Interface for controlling PWM clock source
 */
 
@@ -45,7 +44,14 @@
 #define PWM_CLK_SRC_LEN_IN_BITS         (1)
 #define PWM_CLK_FREQ_DIV_LEN_IN_BITS    (4)
 
-// For value range checks
+// Clock data
+#define PWM_CLK_CTRL_NR_OF_SRC          (2)
+#define PWM_CLK_CTRL_RTC_CLK            (0)
+#define PWM_CLK_CTRL_PERIPH_CLK         (1)
+#define PWM_CLK_CTRL_RTC_FREQ           (32000)
+#define PWM_CLK_CTRL_PERIPH_FREQ        (13000000)
+
+// For input checks
 #define PWM_CLK_ENABLE_FLAG             (1)
 #define PWM_CLK_DISABLE_FLAG            (0)
 #define PWM_CLK_MAX_FREQ_DIV            (15)
@@ -64,9 +70,48 @@ static int read_data (pwm_enum pwm, pwm_clk_data_enum data_type, uint8_t* output
 static int write_data (pwm_enum pwm, pwm_clk_data_enum data_type, uint8_t new_value);
 static int get_bitmask_and_offset (pwm_enum pwm, pwm_clk_data_enum data_type, unsigned long* bitmask, int* offset);
 
+// Clock frequencies array, indexed by clock source flag
+static const int clock_frequencies[PWM_CLK_CTRL_NR_OF_SRC] = { 
+    PWM_CLK_CTRL_RTC_FREQ, 
+    PWM_CLK_CTRL_PERIPH_FREQ 
+};
+
 /************************************************************
 *	Public functions
 ************************************************************/
+
+int pwm_clk_ctrl_get_frequency (pwm_enum pwm, int* frequency)
+{
+    if (frequency == NULL)
+        return -EINVAL;
+
+    int result = SUCCESS;
+    
+    uint8_t clock_source;
+
+    uint8_t divider; 
+
+    result = pwm_clk_ctrl_read_src (pwm, &clock_source);
+
+    if (result == SUCCESS)
+    {
+        result = pwm_clk_ctrl_read_freq_div (pwm, &divider);
+    }
+
+    if (divider == 0)
+    {
+        result = -ENODATA;
+    }
+
+    if (result == SUCCESS)
+    {
+        *frequency = clock_frequencies[clock_source] / divider;
+    }
+    
+    return result;
+}
+
+// ------------------------------------------------------------ //
 
 int pwm_clk_ctrl_read_enable (pwm_enum pwm, uint8_t* output)
 {
@@ -84,7 +129,6 @@ int pwm_clk_ctrl_write_enable (pwm_enum pwm, uint8_t new_value)
     if (new_value != PWM_CLK_ENABLE_FLAG
     &&  new_value != PWM_CLK_DISABLE_FLAG)
     {
-        printk ("[PWM clock write] Invalid flag: %d\n", new_value);
         return -EINVAL;
     }
 
@@ -113,7 +157,6 @@ int pwm_clk_ctrl_write_src (pwm_enum pwm, uint8_t new_value)
     if (new_value != PWM_CLK_CTRL_RTC_CLK
     &&  new_value != PWM_CLK_CTRL_PERIPH_CLK)
     {
-        printk ("[PWM clock write] Invalid clock source: %d\n", new_value);
         return -EINVAL;
     }
 
@@ -141,7 +184,6 @@ int pwm_clk_ctrl_write_freq_div (pwm_enum pwm, uint8_t new_value)
 {
     if (new_value < 0 || new_value > PWM_CLK_MAX_FREQ_DIV)
     {
-        printk ("[PWM clock write] Invalid frequency divider: %d\n", new_value);
         return -EINVAL;
     }
     
@@ -226,19 +268,11 @@ static int write_data (pwm_enum pwm, pwm_clk_data_enum data_type, uint8_t new_va
 
     if (result == SUCCESS)
     {
-        int bit_pos = 0;
+        result = write_n_bits_from_src_to_dest (new_value, &register_data, data_len, offset);
+    }
 
-        for (bit_pos = 0; bit_pos < data_len; bit_pos++)
-        {
-            int bit_pos_with_offset = bit_pos + offset;
-            
-            uint8_t bit_value = GET_NTH_BIT(new_value, bit_pos);
-
-            register_data = (bit_value == 0) ?
-                            CLEAR_NTH_BIT(register_data, bit_pos_with_offset) :
-                            SET_NTH_BIT(register_data, bit_pos_with_offset);
-        }
-
+    if (result == SUCCESS)
+    {
         result = pp_iomem_write_4_bytes (PWM_CLK_CTRL_REG_ADDR, register_data);
     }
 
