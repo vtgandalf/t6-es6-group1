@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "bit_manipulation.h": "c",
+        "pwm_clk_ctrl.h": "c"
+    }
+}

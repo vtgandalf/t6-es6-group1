@@ -105,6 +105,10 @@ int pwm_devfs_initialize (void)
     {
         return -ENOMEM;
     }
+    else 
+    {
+        result = pwm_ctrl_initialize();
+    }
 
     return result;
 }
@@ -185,7 +189,6 @@ static ssize_t device_read (struct file *file, char *buffer, size_t size, loff_t
 
     if (bytes_processed >= sizeof(int))
     {
-        printk ("[device_read  PWM%d] data=%d, bytes_processed=%d\n", pwm->id + 1, data, bytes_processed);
         data = 0;
         bytes_processed = 0;
     }
@@ -221,7 +224,6 @@ static ssize_t device_write (struct file *file, const char *buffer, size_t lengt
 
     if (result == SUCCESS)
     {
-        printk (KERN_INFO "[device_write  PWM%d] data=%d\n", pwm->id + 1, data);
         result = pwm_handlers_table[pwm->data_type].write(pwm->id, data);
     }
     

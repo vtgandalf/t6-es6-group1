@@ -14,6 +14,7 @@
 
 #include "es6_generic.h"				// for generic defines
 #include "pwm_clk_ctrl.h"               // for clock frequency
+#include "lcd_ctrl.h"                   // for disabling LCD
 #include "pp_iomem.h"                   // reuse from peek and poke
 #include "bit_manipulation.h"           // for helper macros
 
@@ -58,6 +59,16 @@ static int get_reload_from_pwm_frequency (pwm_enum pwm, int frequency, uint8_t* 
 /************************************************************
 *	Public functions
 ************************************************************/
+int pwm_ctrl_initialize (void)
+{
+    int result = SUCCESS;
+    
+    result = lcd_ctrl_write_enable (LCD_DISABLE_FLAG);
+
+    return result;
+}
+
+// ------------------------------------------------------------ //
 
 int pwm_ctrl_read_enable (pwm_enum pwm, uint8_t* output)
 {
@@ -118,7 +129,6 @@ int pwm_ctrl_write_freq (pwm_enum pwm, int new_value)
     {
         if (new_value < lower_bound || new_value > upper_bound)
         {
-            printk (KERN_INFO "[pwm_ctrl write freq] freq=%d out of bounds %d - %d\n", new_value, lower_bound, upper_bound);
             return -EINVAL;
         }
     }

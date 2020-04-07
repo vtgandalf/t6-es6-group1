@@ -5,6 +5,8 @@
 
 #include "pwm_enum.h"
 
+int pwm_ctrl_initialize (void);
+
 int pwm_ctrl_read_enable (pwm_enum pwm, uint8_t* output);
 int pwm_ctrl_write_enable (pwm_enum pwm, uint8_t new_value);
 
