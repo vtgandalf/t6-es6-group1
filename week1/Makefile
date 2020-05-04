@@ -24,6 +24,7 @@ KSRC=/lib/modules/$(VERSION)/build
 #	Cross Compilation Configuration
 # 
 LPC_KSRC=../linux-2.6.34/
+ZYBO_KSRC=./../zybo_kernel
 
 # Architecture
 ARCH=arm
@@ -45,6 +46,11 @@ lpc:
 	@ echo "=== CROSS COMPILATION TO LPC3250 ==="
 	@ echo "Kernel source: $(LPC_KSRC)"
 	make -C $(LPC_KSRC) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
+
+zybo:
+	@ echo "=== CROSS COMPILATION TO ZYBO ==="
+	@ echo "Kernel source: $(ZYBO_KSRC)"
+	make -C $(ZYBO_KSRC) M=$(PWD) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) modules
 
 ifneq ($(LPC_KSRC),)
 clean:
